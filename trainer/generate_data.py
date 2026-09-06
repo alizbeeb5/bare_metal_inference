@@ -59,7 +59,7 @@ def generate(n_rows=500, seed=42):
 def main():
     out_dir = Path(__file__).parent / "data"
     out_dir.mkdir(parents=True, exist_ok=True)
-    df = generate()
+    df = generate(5000,42)
     df.to_csv(out_dir/"shipments.csv", index = False)
     print(f"Generated {len(df)} rows-> {out_dir/'shipments.csv'}")
     print(f"Delay rate: {df['delayed'].mean():.3f}")
