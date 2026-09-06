@@ -1,0 +1,3 @@
+/engine/build/
+/.venv/
+/engine/cmake-build-debug/

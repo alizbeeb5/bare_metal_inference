@@ -41,7 +41,7 @@ namespace bmie {
                 return nullptr;
             }
             std::byte* ptr = base_ +aligned_offset;
-            offset_ += aligned_offset +bytes;
+            offset_ = aligned_offset +bytes;
             return ptr;
         }
 
