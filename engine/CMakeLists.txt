@@ -11,48 +11,35 @@ endif()
 
 add_compile_options(-Wall -Wextra -Wpedantic)
 
-# --- Header-only deps via FetchContent ---
-include(FetchContent)
+# Vendored single-header libs (no FetchContent, no network at build time)
+add_library(httplib INTERFACE)
+target_include_directories(httplib INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
 
-FetchContent_Declare(
-        httplib
-        GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
-        GIT_TAG v0.15.3
-)
-FetchContent_Declare(
-        nlohmann_json
-        GIT_REPOSITORY https://github.com/nlohmann/json.git
-        GIT_TAG v3.11.3
-)
-FetchContent_MakeAvailable(httplib nlohmann_json)
+add_library(nlohmann_json INTERFACE)
+target_include_directories(nlohmann_json INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
 
-# --- Engine library (so tests can link it without rebuilding main) ---
+# Engine sources — just the .cpp files. The headers are picked up
+# automatically via target_include_directories.
 add_library(engine_lib
-        src/arena.cpp
-        src/math.cpp
         src/model.cpp
         src/api.cpp
+        src/httplib_impl.cpp
 )
 target_include_directories(engine_lib PUBLIC include)
-target_link_libraries(engine_lib PUBLIC httplib nlohmann_json::nlohmann_json)
+target_link_libraries(engine_lib PUBLIC httplib nlohmann_json)
 
-# --- Executable ---
+# Executable
 add_executable(bare_metal_inference src/main.cpp)
 target_link_libraries(bare_metal_inference PRIVATE engine_lib)
 
+# Tests
 enable_testing()
-
-
-add_executable(test_arena tests/test_arena.cpp)
-target_link_libraries(test_arena PRIVATE engine_lib)
-add_test(NAME test_arena COMMAND test_arena)
-
-add_executable(test_math tests/test_math.cpp)
-target_link_libraries(test_math PRIVATE engine_lib)
-add_test(NAME test_math COMMAND test_math)
-
-add_executable(test_inference tests/test_inference.cpp)
-target_link_libraries(test_inference PRIVATE engine_lib)
-add_test(NAME test_inference COMMAND test_inference)
+add_executable(test_arena      tests/test_arena.cpp)
+add_executable(test_math       tests/test_math.cpp)
+add_executable(test_inference  tests/test_inference.cpp)
+foreach(t test_arena test_math test_inference)
+    target_link_libraries(${t} PRIVATE engine_lib)
+    add_test(NAME ${t} COMMAND ${t})
+endforeach()
 set_tests_properties(test_inference PROPERTIES
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/..)
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/..)
