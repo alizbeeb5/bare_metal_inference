@@ -54,3 +54,5 @@ add_test(NAME test_math COMMAND test_math)
 add_executable(test_inference tests/test_inference.cpp)
 target_link_libraries(test_inference PRIVATE engine_lib)
 add_test(NAME test_inference COMMAND test_inference)
+set_tests_properties(test_inference PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/..)

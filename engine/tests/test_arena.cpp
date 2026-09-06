@@ -136,16 +136,8 @@ void test_many_small_allocs() {
 }
 
 // --- Test 6: alloc_bytes — would have caught the + vs = bug ---
-//
-// This is the one I just fixed in arena.hpp. The test pins down
-// the behavior: N consecutive alloc_bytes(N, K) calls must advance
-// the offset by exactly N*K total bytes, not 2x that or more.
 void test_alloc_bytes() {
     Arena a(256);
-
-    // 8 calls of 8 bytes each = 64 bytes total. With the old bug
-    // (offset_ += aligned_offset + bytes), this would advance
-    // exponentially and exhaust the arena around call 4 or 5.
     for (int i = 0; i < 8; ++i) {
         std::byte* p = a.alloc_bytes(8, 4);
         EXPECT(p != nullptr);

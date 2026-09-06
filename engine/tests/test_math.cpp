@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
-#include <limits>
+
 
 using bmie::math::gemv;
 using bmie::math::sigmoid;
@@ -90,8 +90,7 @@ void test_gemv_zeros() {
     EXPECT_NEAR(y[0], -2.5f, 1e-6);
 }
 
-// The case we'll actually use at inference: m=1 (one output neuron).
-// The forward pass is effectively a dot product + bias.
+
 void test_gemv_single_output() {
     // A = [0.6, -0.5, 0.57, 0.15, 0.14, -0.19, -0.16, 0.34]  (8 weights)
     // x = [0.1, -0.2, 0.3, -0.4, 0.5, -0.6, 0.7, -0.8]      (8 normalized features)
@@ -106,9 +105,6 @@ void test_gemv_single_output() {
     // dot = 0.06 + 0.10 + 0.171 - 0.06 + 0.07 + 0.114 - 0.112 - 0.272
     //     = 0.061 (approximately)
     // y = 0.061 + (-0.92) = -0.859
-    // The exact value doesn't matter what matters is that gemv
-    // gives a reproducible answer that we can sanity-check against
-    // a hand calculation.
     const float dot = 0.06f + 0.10f + 0.171f - 0.06f + 0.07f + 0.114f - 0.112f - 0.272f;
     EXPECT_NEAR(y[0], dot - 0.92f, 1e-5);
 }
@@ -129,14 +125,12 @@ void test_sigmoid_large_positive() {
 }
 
 // Large negative -> 0.0. This is the test that catches the
-// else-branch bug we just fixed (1/(1+e) returns ~0.73 instead of ~0).
 void test_sigmoid_large_negative() {
     EXPECT_NEAR(sigmoid(-20.0f), 0.0f,  1e-5);
     EXPECT_NEAR(sigmoid(-5.0f),  0.0067f, 1e-3);
 }
 
 // Stability: must not produce NaN or Inf at extreme inputs.
-// This is why the branch-stable version exists.
 void test_sigmoid_stability() {
     EXPECT(std::isfinite(sigmoid( 1000.0f)));
     EXPECT(std::isfinite(sigmoid(-1000.0f)));
